@@ -1,0 +1,17 @@
+# Godot / .NET
+.mono/
+.import/
+.cache/
+obj/
+bin/
+*.mono/
+*.log
+
+# System / IDE
+.vscode/
+.idea/
+*.user
+*.suo
+*.tmp
+*.bak
+Thumbs.db
