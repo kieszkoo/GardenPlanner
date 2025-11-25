@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://ceqqxaqro4pdk"]
+
+[ext_resource type="Script" uid="uid://8bgj7jidted" path="res://Scripts/Plant.cs" id="1_t27ga"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_mb61i"]
+
+[node name="Plant" type="Area2D"]
+script = ExtResource("1_t27ga")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_mb61i")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
