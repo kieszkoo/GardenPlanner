@@ -13,8 +13,25 @@ offset_bottom = 40.0
 
 [node name="SimulationButton" type="Button" parent="Control"]
 layout_mode = 0
-offset_right = 8.0
-offset_bottom = 8.0
+offset_left = 932.0
+offset_right = 1151.0
+offset_bottom = 31.0
 text = "Uruchom symulacje (10 lat)"
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="Panel" type="Panel" parent="CanvasLayer"]
+offset_right = 118.0
+offset_bottom = 647.0
+
+[node name="PlantList" type="VBoxContainer" parent="CanvasLayer/Panel"]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.025
+anchor_bottom = 0.025
+offset_left = -2.0
+offset_top = -14.175001
+offset_right = 117.0
+offset_bottom = 628.825
 
 [connection signal="pressed" from="Control/SimulationButton" to="." method="_on_simulation_button_pressed"]
