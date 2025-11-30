@@ -8,6 +8,7 @@ public partial class Plant : Area2D
 	public float CurrentHeight { get; private set; }
 	public float CurrentRadius { get; private set; }
 	public int AgeMonths { get; private set; }
+	private const float PixelsPerMeter = 50.0f;
 
 	private List<Plant> collidingNeighbors = new List<Plant>();
 	
@@ -18,6 +19,8 @@ public partial class Plant : Area2D
 	{
 		collisionShape = GetNode<CollisionShape2D>("CollisionShape2D");
 		sprite = GetNode<Sprite2D>("Sprite2D");
+		
+		ZIndex = 10;
 
 		AreaEntered += OnAreaEntered;
 		AreaExited += OnAreaExited;
@@ -33,30 +36,50 @@ public partial class Plant : Area2D
 		if (ResourceLoader.Exists(data.TexturePath))
 		{
 			sprite.Texture = (Texture2D)ResourceLoader.Load(data.TexturePath);
+			sprite.Scale = new Vector2(0.3f, 0.3f);
+			sprite.ShowBehindParent = true;
 		}
 		else
 		{
 			GD.PrintErr($"Nie znaleziono tekstury dla rosliny: {data.Name} pod sciezka: {data.TexturePath}");
 		}
-		
-		if (collisionShape.Shape is CircleShape2D circle)
-		{
-			// Ustawienie początkowego kształtu
-			circle.Radius = CurrentRadius;
-		}
-
 		UpdateVisuals();
+	}
+
+	public override void _Draw()
+	{
+		if (CurrentRadius > 0)
+		{
+			float pixelRadius = CurrentRadius * PixelsPerMeter;
+
+			Color fillColor;
+			Color outlineColor;
+			if (collidingNeighbors.Count > 0)
+			{
+				fillColor = new Color(0.9f, 0.2f, 0.2f, 0.5f);		//Kolizja - kolor czerwony
+				outlineColor = Colors.DarkRed;
+			}
+			else
+			{
+				fillColor = new Color(0.2f, 0.8f, 0.2f, 0.5f);		// Brak kolizji - kolor zielony
+				outlineColor = Colors.DarkGreen;
+			}
+			DrawCircle(Vector2.Zero, pixelRadius, fillColor);
+			DrawArc(Vector2.Zero, pixelRadius, 0, Mathf.Tau, 64, outlineColor, 2.0f);
+		}
+		
 	}
 
 	private void UpdateVisuals()
 	{
+		float pixelRadius = CurrentRadius * PixelsPerMeter;
 		if (collisionShape.Shape is CircleShape2D circle)
 		{
-			circle.Radius = CurrentRadius;
+			circle.Radius = pixelRadius;
 		}
-
-		float scaleFactor = CurrentRadius / (TypeData.MaxWidth / 2.0f);
-		sprite.Scale = new Vector2(scaleFactor, scaleFactor);
+		// float scaleFactor = CurrentRadius / (TypeData.MaxWidth / 2.0f);
+		// sprite.Scale = new Vector2(scaleFactor, scaleFactor);
+		QueueRedraw();
 	}
 
 	public void SimulateMonth(float growthFactorSoil, float sunLevel)
@@ -96,6 +119,7 @@ public partial class Plant : Area2D
 			if (!collidingNeighbors.Contains(neighbor))
 			{
 				collidingNeighbors.Add(neighbor);
+				QueueRedraw();
 			}
 		}
 	}
@@ -105,6 +129,7 @@ public partial class Plant : Area2D
 		if (area is Plant neighbor)
 		{
 			collidingNeighbors.Remove(neighbor);
+			QueueRedraw();
 		}
 	}
 }
