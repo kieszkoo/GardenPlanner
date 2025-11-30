@@ -11,12 +11,19 @@ public partial class GardenManager : Node2D
 	private VBoxContainer plantListContainer;
 	private Sprite2D ghostSprite;
 	
+	private Button simulationButton;
+	private Button stopButton;
+	private Label dateLabel;
+	
 	private PlantTypeData? selectedPlantType = null;
 
 	private int totalYearsToSimulate = 10;
 	private int simulationStepMonths = 1;
 	private int currentSimulationMonth = 0;
-
+	private float simulationSpeedSeconds = 0.5f;
+	private Timer simulationTimer;
+	private bool isSimulationRunning = false;
+	
 	public override void _Ready()
 	{
 		GD.Print("Inicjalizacja Godot Garden Manager ...");
@@ -38,8 +45,58 @@ public partial class GardenManager : Node2D
 		{
 			GD.PrintErr("BŁĄD: Nie znaleziono Vbox Container (PlantList) w UI. Sprawdź ścieżkę");
 		}
+		
+		dateLabel = GetNodeOrNull<Label>("CanvasLayer/DateLabel");
+		if (dateLabel == null)
+		{
+			GD.PrintErr("BŁĄD: Nie znaleziono CanvasLayer/DateLabel");
+		}
+		else
+		{
+			UpdateDateLabel(0);
+		}
 
 		CreateGhostSprite();
+		SetupSimulationTimer();
+		SetupControlButtons();
+	}
+
+	private void SetupSimulationTimer()
+	{
+		simulationTimer = new  Timer();
+		simulationTimer.WaitTime = simulationSpeedSeconds;
+		simulationTimer.OneShot = false;
+		simulationTimer.Timeout += OnSimulationTimerTimeout;
+		AddChild(simulationTimer);
+	}
+
+	private void SetupControlButtons()
+	{
+		simulationButton = GetNodeOrNull<Button>("Control/SimulationButton");
+		if (simulationButton != null)
+		{
+			simulationButton.Text = "Rozpocznij Symulację";
+			
+			simulationButton.Pressed -= OnSimulationButtonPressed;
+			simulationButton.Pressed += OnSimulationButtonPressed;
+		}
+		else
+		{
+			GD.PrintErr("BŁĄD: Nie znaleziono przycisku Control/SimulationButton");
+		}
+		stopButton = GetNodeOrNull<Button>("Control/StopButton");
+		if (stopButton != null)
+		{
+			stopButton.Text = "Stop";
+			stopButton.Visible = false;
+			
+			stopButton.Pressed -= OnStopButtonPressed;
+			stopButton.Pressed += OnStopButtonPressed;
+		}
+		else
+		{
+			GD.PrintErr("BŁĄD: Nie znaleziono przycisku Control/StopButton");
+		}
 	}
 
 	private void CreateGhostSprite()
@@ -54,16 +111,14 @@ public partial class GardenManager : Node2D
 
 	private void GeneratePlantButtons()
 {
-	// 1. Sprawdzenie kontenera UI
 	if (plantListContainer == null)
 	{
 		GD.PrintErr("BŁĄD KRYTYCZNY: Zmienna 'plantListContainer' jest NULL.");
 		GD.PrintErr("Rozwiązanie: Jeśli używasz [Export], przeciągnij węzeł VBoxContainer do pola w Inspektorze.");
 		GD.PrintErr("Rozwiązanie: Jeśli używasz GetNode, sprawdź czy ścieżka jest poprawna.");
-		return; // Przerywamy funkcję, żeby nie było crasha
+		return;
 	}
-
-	// 2. Sprawdzenie danych
+	
 	if (InitialData.PlantTypes == null)
 	{
 		GD.PrintErr("BŁĄD KRYTYCZNY: Lista 'InitialData.PlantTypes' nie istnieje (jest null). Sprawdź plik DataModels.cs.");
@@ -72,20 +127,17 @@ public partial class GardenManager : Node2D
 
 	GD.Print($"Generowanie przycisków... Znaleziono {InitialData.PlantTypes.Count} roślin.");
 
-	// Czyścimy stare przyciski
 	foreach (var child in plantListContainer.GetChildren())
 	{
 		child.QueueFree();
 	}
-
-	// Generujemy nowe
+	
 	foreach (var plantData in InitialData.PlantTypes)
 	{
 		var btn = new Button();
 		btn.Text = plantData.Name;
 		btn.CustomMinimumSize = new Vector2(0, 40);
-
-		// Ważne: Tworzymy lokalną kopię zmiennej dla lambdy
+		
 		var pData = plantData; 
 		btn.Pressed += () => SelectPlantToPlace(pData);
 
@@ -158,29 +210,72 @@ public partial class GardenManager : Node2D
 		GD.Print($"Posadzono {typeData.Name} na pozycji {position}.");
 	}
 	
+	private void OnSimulationButtonPressed()
+	{
+		if (isSimulationRunning) return;
+		StartSimulation();
+	}
+	
+	private void OnStopButtonPressed()
+	{
+		StopSimulation();
+	}
 
-	public void RunSimulation()
+	private void StartSimulation()
 	{
 		if (plantedPlants.Count == 0)
 		{
 			GD.Print("Brak roślin do symulacji");
 			return;
 		}
+		isSimulationRunning = true;
+		simulationButton.Disabled = true;
+		stopButton.Visible = true;
 		
-		GD.Print($"--- Rozpoczecie symulacji ({totalYearsToSimulate} LAT) ---");
-		int totalMonths = totalYearsToSimulate * 12;
-
-		for (int month = 1; month <= totalMonths; month += simulationStepMonths)
+		simulationTimer.Start();
+		GD.Print($"--- Rozpoczecie symulacji ---");
+	}
+	
+	private void StopSimulation()
+	{
+		isSimulationRunning = false;
+		simulationTimer.Stop();
+		
+		if(simulationButton != null) simulationButton.Disabled = false;
+		if(stopButton != null) stopButton.Visible = false;
+		
+		GD.Print($"--- Zatrzymanie symulacji ---");
+	}
+	
+	private void OnSimulationTimerTimeout()
+	{
+		currentSimulationMonth++;
+		SimulateStep(currentSimulationMonth);
+		UpdateDateLabel(currentSimulationMonth);
+		
+		if (currentSimulationMonth >= totalYearsToSimulate * 12)
 		{
-			SimulateStep(month);
+			StopSimulation();
+			GD.Print("Koniec symulacji (osiągnięto limit czasu).");
 		}
-		GD.Print("--- Symulacja zakonczona");
+	}
+	
+	private void UpdateDateLabel(int total_months)
+	{
+		if (dateLabel == null) return;
+
+		int year = (total_months -1) / 12 + 1;
+		int monthInYear = ((total_months -1) % 12) + 1;
+
+		dateLabel.Text = $"Rok: {year}, Miesiąc: {monthInYear}";
 	}
 
 	private void SimulateStep(int month)
 	{
-		currentSimulationMonth = month;
-		GD.Print($"Miesiac: {currentSimulationMonth}");
+		int year = (month -1) / 12 + 1;
+		int monthInYear = ((month -1) % 12) + 1;
+		
+		GD.Print($"--- Symulacja Rok {year}, Miesiąc {monthInYear} ---");
 
 		foreach (var plantA in plantedPlants)
 		{
@@ -226,10 +321,5 @@ public partial class GardenManager : Node2D
 		float preferenceImpact = Mathf.Abs(sunLevel * 10.0f - plantB.TypeData.SunPreference) / 10.0f;
 
 		return sunLevel * (1.0f - preferenceImpact / 2.0f);
-	}
-
-	private void _on_simulation_button_pressed()
-	{
-		RunSimulation();
 	}
 }
