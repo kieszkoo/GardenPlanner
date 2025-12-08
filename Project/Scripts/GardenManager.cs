@@ -1,16 +1,23 @@
 using Godot;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using GardenPlanner.Database;
 
 public partial class GardenManager : Node2D
 {
 	private PackedScene plantScene;
 	private List<Plant> plantedPlants = new List<Plant>();
-	private SoilData currentSoilType = InitialData.SoilTypes[0];
 
+	private List<PlantTypeData> availablePlantTypes = new List<PlantTypeData>();
+	private List<SoilData> availableSoilTypes = new List<SoilData>();
+	private List<GrowthRule> availablleGrowthRules = new List<GrowthRule>();
+
+	private SoilData currentSoilType;
+	
+	// UI
 	private VBoxContainer plantListContainer;
 	private Sprite2D ghostSprite;
-	
 	private Button simulationButton;
 	private Button stopButton;
 	private Label dateLabel;
@@ -23,10 +30,17 @@ public partial class GardenManager : Node2D
 	private float simulationSpeedSeconds = 0.5f;
 	private Timer simulationTimer;
 	private bool isSimulationRunning = false;
+
+	private DatabaseManager dbManager;
 	
-	public override void _Ready()
+	public override async void _Ready()
 	{
 		GD.Print("Inicjalizacja Godot Garden Manager ...");
+
+		dbManager = new DatabaseManager();
+		AddChild(dbManager);
+
+		await LoadInitialDataAsync();
 		
 		plantScene = ResourceLoader.Load<PackedScene>("res://Scenes/Plant.tscn");
 
@@ -59,6 +73,36 @@ public partial class GardenManager : Node2D
 		CreateGhostSprite();
 		SetupSimulationTimer();
 		SetupControlButtons();
+	}
+
+	private async Task LoadInitialDataAsync()
+	{
+		GD.Print("[DB] Rozpoczecie ładaowania danych...");
+
+		Task<List<PlantTypeData>> plantsTask = dbManager.LoadPlantTypesAsync();
+		Task<List<SoilData>> soilsTask = dbManager.LoadSoilDataAsync();
+		Task<List<GrowthRule>> rulesTask = dbManager.LoadGrowthRulesAsync();
+		
+		await Task.WhenAll(plantsTask, soilsTask, rulesTask);
+
+		availablePlantTypes = plantsTask.Result;
+		availableSoilTypes = soilsTask.Result;
+		availablleGrowthRules = rulesTask.Result;
+
+		if (availableSoilTypes.Count > 0)
+		{
+			currentSoilType = availableSoilTypes[0];
+		}
+		else
+		{
+			GD.PrintErr("[DB ERROR] Nie załadowano typów gleby. Używam danych statystycznych.");
+			currentSoilType = InitialData.SoilTypes[0];
+			availablePlantTypes = InitialData.PlantTypes;
+			availableSoilTypes = InitialData.SoilTypes;
+			availablleGrowthRules = InitialData.GrowthRules;
+		}
+		
+		GD.Print("[DB] Ładowanie danych zakończone");
 	}
 
 	private void SetupSimulationTimer()
