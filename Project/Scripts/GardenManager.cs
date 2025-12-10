@@ -169,14 +169,14 @@ public partial class GardenManager : Node2D
 		return;
 	}
 
-	GD.Print($"Generowanie przycisków... Znaleziono {InitialData.PlantTypes.Count} roślin.");
+	GD.Print($"Generowanie przycisków... Znaleziono {availablePlantTypes.Count} roślin.");
 
 	foreach (var child in plantListContainer.GetChildren())
 	{
 		child.QueueFree();
 	}
 	
-	foreach (var plantData in InitialData.PlantTypes)
+	foreach (var plantData in availablePlantTypes)
 	{
 		var btn = new Button();
 		btn.Text = plantData.Name;
