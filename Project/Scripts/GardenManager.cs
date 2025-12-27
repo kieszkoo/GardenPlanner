@@ -17,6 +17,8 @@ public partial class GardenManager : Node2D
 	
 	// UI
 	private VBoxContainer plantListContainer;
+	private ScrollContainer scrollContainer;
+	private OptionButton filterOptionButton;
 	private Sprite2D ghostSprite;
 	private Button simulationButton;
 	private Button stopButton;
@@ -49,16 +51,8 @@ public partial class GardenManager : Node2D
 			GD.PrintErr("Błąd: Nie można załadować sceny");
 			return;
 		}
-		plantListContainer = GetNode<VBoxContainer>("CanvasLayer/Panel/PlantList");
-
-		if (plantListContainer != null)
-		{
-			GeneratePlantButtons();
-		}
-		else
-		{
-			GD.PrintErr("BŁĄD: Nie znaleziono Vbox Container (PlantList) w UI. Sprawdź ścieżkę");
-		}
+		
+		SetupPlantListUI();
 		
 		dateLabel = GetNodeOrNull<Label>("CanvasLayer/DateLabel");
 		if (dateLabel == null)
@@ -73,6 +67,56 @@ public partial class GardenManager : Node2D
 		CreateGhostSprite();
 		SetupSimulationTimer();
 		SetupControlButtons();
+	}
+	
+	private void SetupPlantListUI()
+	{
+		var panel = GetNodeOrNull<Panel>("CanvasLayer/Panel");
+		if (panel == null)
+		{
+			GD.PrintErr("BŁĄD: Nie znaleziono CanvasLayer/Panel");
+			return;
+		}
+		
+		//PRZYCISK FILTROWANIA
+		filterOptionButton = GetNodeOrNull<OptionButton>("CanvasLayer/Panel/FilterOptionButton");
+		if (filterOptionButton == null)
+		{
+			GD.PrintErr("BŁĄD: Nie znaleziono CanvasLayer/Panel/FilterOptionButton");
+			return;
+		}
+		// Ustaw opcje filtrowania
+		filterOptionButton.Clear();
+		filterOptionButton.AddItem("Wszystkie", 0);
+		filterOptionButton.AddItem("Drzewa", 1);
+		filterOptionButton.AddItem("Krzewy", 2);
+		filterOptionButton.AddItem("Kwiaty", 3);
+		filterOptionButton.AddItem("Paprocie", 4);
+		filterOptionButton.AddItem("Zioła", 5);
+		filterOptionButton.AddItem("Trawy", 6);
+		
+		if (!filterOptionButton.IsConnected(OptionButton.SignalName.ItemSelected, Callable.From<long>(OnFilterItemSelected)))
+		{
+			filterOptionButton.ItemSelected += OnFilterItemSelected;
+		}
+		
+		//LISTA ROŚLIN
+		plantListContainer = GetNode<VBoxContainer>("CanvasLayer/Panel/ScrollContainer/PlantList");
+		
+		if (plantListContainer != null)
+		{
+			GeneratePlantButtons(0);
+		}
+		else
+		{
+			GD.PrintErr("BŁĄD: Nie znaleziono Vbox Container (PlantList) w UI. Sprawdź ścieżkę");
+		}
+	}
+	
+	private void OnFilterItemSelected(long index)
+	{
+		int categoryId = filterOptionButton.GetItemId((int)index);
+		GeneratePlantButtons(categoryId);
 	}
 
 	private async Task LoadInitialDataAsync()
@@ -153,7 +197,7 @@ public partial class GardenManager : Node2D
 		AddChild(ghostSprite);
 	}
 
-	private void GeneratePlantButtons()
+	private void GeneratePlantButtons(int categoryFilter = 0)
 {
 	if (plantListContainer == null)
 	{
@@ -178,6 +222,14 @@ public partial class GardenManager : Node2D
 	
 	foreach (var plantData in availablePlantTypes)
 	{
+		if (categoryFilter != 0)
+		{
+			if (plantData.TypeId != categoryFilter)	
+			{
+				continue;
+			}
+		}
+		
 		var btn = new Button();
 		btn.Text = plantData.Name;
 		btn.CustomMinimumSize = new Vector2(0, 40);

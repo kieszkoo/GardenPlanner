@@ -10,6 +10,7 @@ layout_mode = 3
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
+metadata/_edit_use_anchors_ = true
 
 [node name="SimulationButton" type="Button" parent="Control"]
 layout_mode = 0
@@ -30,18 +31,28 @@ text = "Stop"
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="Panel" type="Panel" parent="CanvasLayer"]
-offset_top = 1.0
-offset_right = 118.0
-offset_bottom = 648.0
+offset_right = 250.0
+offset_bottom = 650.0
 
-[node name="PlantList" type="VBoxContainer" parent="CanvasLayer/Panel"]
+[node name="FilterOptionButton" type="OptionButton" parent="CanvasLayer/Panel"]
+layout_mode = 0
+offset_right = 250.0
+offset_bottom = 30.0
+
+[node name="ScrollContainer" type="ScrollContainer" parent="CanvasLayer/Panel"]
 layout_mode = 1
-anchors_preset = -1
-anchor_top = 0.025
-anchor_bottom = 0.025
-offset_top = -17.175001
-offset_right = 119.0
-offset_bottom = 625.825
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 30.0
+offset_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PlantList" type="VBoxContainer" parent="CanvasLayer/Panel/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 
 [node name="DateLabel" type="Label" parent="CanvasLayer"]
 offset_left = 436.0
