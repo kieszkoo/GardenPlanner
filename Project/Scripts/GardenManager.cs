@@ -11,7 +11,8 @@ public partial class GardenManager : Node2D
 
 	private List<PlantTypeData> availablePlantTypes = new List<PlantTypeData>();
 	private List<SoilData> availableSoilTypes = new List<SoilData>();
-	private List<GrowthRule> availablleGrowthRules = new List<GrowthRule>();
+	
+	private const float PixelsPerMeter = 50.0f;
 
 	private SoilData currentSoilType;
 	
@@ -102,7 +103,6 @@ public partial class GardenManager : Node2D
 		
 		//LISTA ROŚLIN
 		plantListContainer = GetNode<VBoxContainer>("CanvasLayer/Panel/ScrollContainer/PlantList");
-		
 		if (plantListContainer != null)
 		{
 			GeneratePlantButtons(0);
@@ -125,13 +125,11 @@ public partial class GardenManager : Node2D
 
 		Task<List<PlantTypeData>> plantsTask = dbManager.LoadPlantTypesAsync();
 		Task<List<SoilData>> soilsTask = dbManager.LoadSoilDataAsync();
-		Task<List<GrowthRule>> rulesTask = dbManager.LoadGrowthRulesAsync();
 		
-		await Task.WhenAll(plantsTask, soilsTask, rulesTask);
+		await Task.WhenAll(plantsTask, soilsTask);
 
 		availablePlantTypes = plantsTask.Result;
 		availableSoilTypes = soilsTask.Result;
-		availablleGrowthRules = rulesTask.Result;
 
 		if (availableSoilTypes.Count > 0)
 		{
@@ -143,10 +141,11 @@ public partial class GardenManager : Node2D
 			currentSoilType = InitialData.SoilTypes[0];
 			availablePlantTypes = InitialData.PlantTypes;
 			availableSoilTypes = InitialData.SoilTypes;
-			availablleGrowthRules = InitialData.GrowthRules;
 		}
 		
 		GD.Print("[DB] Ładowanie danych zakończone");
+		
+		if (plantListContainer != null) GeneratePlantButtons(0);
 	}
 
 	private void SetupSimulationTimer()
@@ -381,12 +380,43 @@ public partial class GardenManager : Node2D
 		}
 	}
 
+	private float PixelsToMeters(float pixels)
+	{
+		return pixels / PixelsPerMeter;
+	}
+
+	private float MetersToPixels(float meters)
+	{
+		return meters * PixelsPerMeter;
+	}
 	private float GetGrowthFactor(Plant plant)
 	{
-		var rule = InitialData.GrowthRules.FirstOrDefault(r =>
-			r.PlantTypeId == plant.TypeData.Id && r.SoilTypeId == currentSoilType.Id);
+		float nutrientFactor = 0.5f + currentSoilType.NutrientLevel;	//(0.5 - 1.5) im żyźniejsza gleba tym lepiej
+		float prefferedWater = 0.5f;	//Domyślnie 50% wilgotności
 
-		return rule.GrowthMultiplier > 0 ? rule.GrowthMultiplier : 1.0f;
+		switch (plant.TypeData.TypeId)
+		{
+			case 1:	//Drzewa
+			case 2:	//Krzewy
+				prefferedWater = 0.6f;
+				break;
+			case 3:	//Kwiaty
+			case 4:	//Paprocie
+				prefferedWater = 0.8f;
+				break;
+			case 5:	//Zioła	
+			case 6: //Trawy
+				prefferedWater = 0.3f;
+				break;
+			default:
+				prefferedWater = 0.5f;
+				break;
+		}
+		
+		float waterDifference = Mathf.Abs(prefferedWater - currentSoilType.WaterRetention);
+		float waterFactor = 1.0f - (waterDifference * 0.5f);	//Różnica wody wpływa do 50% na wzrost
+		
+		return nutrientFactor * waterFactor;
 	}
 
 	private float CalculateSunLevel(Plant plantB)
@@ -400,22 +430,24 @@ public partial class GardenManager : Node2D
 			if (plantA.CurrentHeight > plantB.CurrentHeight)
 			{
 				float distance = plantA.Position.DistanceTo(plantB.Position);
-				float combinedRadius = plantA.CurrentRadius + 0.5f;
+				float shadowRadius = plantA.CurrentRadius * PixelsToMeters(1.0f);
+				float distInMeters = distance / 50.0f;	//50 pixeli = 1 metr
 
-				if (distance < combinedRadius)
+				if (distInMeters < shadowRadius)
 				{
 					float heightDifference = plantA.CurrentHeight - plantB.CurrentHeight;
-					float shadowImpact = Mathf.Min(heightDifference / 0.5f, 0.8f);
+					float shadowImpact = Mathf.Min(heightDifference / 2.0f, 0.8f);
 					
 					sunLevel -= shadowImpact;
 				}
 			}
 		}
 		
-		sunLevel = Mathf.Max(0.2f, sunLevel);
-
-		float preferenceImpact = Mathf.Abs(sunLevel * 10.0f - plantB.TypeData.SunPreference) / 10.0f;
-
-		return sunLevel * (1.0f - preferenceImpact / 2.0f);
+		sunLevel = Mathf.Max(0.1f, sunLevel); //Min 10% swiatla zawsze dociera
+		float actualSun = sunLevel * 10.0f;	//Skala 0-10
+		float sunDiff = Mathf.Abs(actualSun - plantB.TypeData.SunPreference);
+		float sunFactor = 1.0f - (sunDiff / 20.0f);	//Różnica w preferencjach wpływa do 50% na wzrost
+		
+		return sunFactor;
 	}
 }
