@@ -34,7 +34,7 @@ public partial class DatabaseManager : Node
         }
         catch (Exception ex)
         {
-            GD.PrintErr($"[DB BŁĄD] Nie udało się nawiązać połączenia z MySQL: {ex.Message}");
+            GD.PrintErr($"[DB ERROR] Nie udało się nawiązać połączenia z MySQL: {ex.Message}");
             return false;
         }
     }
@@ -51,7 +51,7 @@ public partial class DatabaseManager : Node
                 await connection.OpenAsync();
                 
                 const string query =
-                    "SELECT ID, Nazwa, Tekstura2D, MaxWysokosc, MaxSzerokosc, GlebokoscKorzeni, PromienKorony, PreferencjeSlonca FROM Roslina;";
+                    "SELECT ID, Nazwa, Tekstura2D, MaxWysokosc, MaxSzerokosc, GlebokoscKorzeni, PromienKorony, PreferencjeSlonca, Typ_ID FROM Roslina;";
                 
                 using (var command = new MySqlCommand(query, connection)) 
                 using (var reader = await command.ExecuteReaderAsync())
@@ -68,6 +68,7 @@ public partial class DatabaseManager : Node
                             RootDepth = reader.GetFloat("GlebokoscKorzeni"),
                             CanopyRadius = reader.GetFloat("PromienKorony"),
                             SunPreference = reader.GetFloat("PreferencjeSlonca"),
+                            TypeId = reader.GetInt32("Typ_ID"),
                             BaseGrowthRate = 0.05f
                         });
                     }
@@ -76,7 +77,7 @@ public partial class DatabaseManager : Node
             }
             catch (Exception ex)
             {
-                GD.PrintErr($"[DB BŁAD] Nie udało się załadować typów roślin: {ex.Message}");
+                GD.PrintErr($"[DB ERROR] Nie udało się załadować typów roślin: {ex.Message}");
             }
 
             return plantTypes;

@@ -27,6 +27,7 @@ public struct PlantTypeData
 	public float RootDepth; //Glebokosc korzeni (m)
 	public float CanopyRadius; //Poczatkowy promien okregu (m)
 	public float SunPreference; //Preferencje slonca (0.0 - cien, 10.0 - slonce)
+	public int TypeId; //ID typu rosliny
 	public float BaseGrowthRate; //Bazowa miesieczna szybkoscc wzrostu
 	
 }
@@ -59,17 +60,17 @@ public static class InitialData
 		new PlantTypeData
 		{
 			Id = 1, Name = "Róża", TexturePath = "res://Textures/Plants/rose.jpg", MaxHeight = 1.5f,
-			MaxWidth = 1.0f, RootDepth = 0.5f, CanopyRadius = 0.5f, SunPreference = 8.0f, BaseGrowthRate = 0.05f
+			MaxWidth = 1.0f, RootDepth = 0.5f, CanopyRadius = 0.5f, SunPreference = 8.0f, TypeId = 1, BaseGrowthRate = 0.05f
 		},
 		new PlantTypeData
 		{
 			Id = 2, Name = "Dąb", TexturePath = "res://Textures/Plants/oak.jpg", MaxHeight = 25.0f,
-			MaxWidth = 15.0f, RootDepth = 3.0f, CanopyRadius = 7.5f, SunPreference = 6.0f, BaseGrowthRate = 0.15f
+			MaxWidth = 15.0f, RootDepth = 3.0f, CanopyRadius = 7.5f, SunPreference = 6.0f, TypeId = 1, BaseGrowthRate = 0.15f
 		},
 		new PlantTypeData
 		{
 			Id = 3, Name = "Paproć", TexturePath = "res://Textures/Plants/fern.jpg", MaxHeight = 0.7f,
-			MaxWidth = 0.8f, RootDepth = 0.3f, CanopyRadius = 0.4f, SunPreference = 2.0f, BaseGrowthRate = 0.04f
+			MaxWidth = 0.8f, RootDepth = 0.3f, CanopyRadius = 0.4f, SunPreference = 2.0f, TypeId = 2, BaseGrowthRate = 0.04f
 		}
 	};
 
