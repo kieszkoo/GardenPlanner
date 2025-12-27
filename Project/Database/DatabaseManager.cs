@@ -83,44 +83,7 @@ public partial class DatabaseManager : Node
             return plantTypes;
         }
     }
-
-    public async Task<List<GrowthRule>> LoadGrowthRulesAsync()
-    {
-        var rules = new List<GrowthRule>();
-
-        using (var connection = new MySqlConnection(connectionString))
-        {
-            try
-            {
-                await connection.OpenAsync();
-                
-                const string query = "SELECT ID_Roslina, ID_Gleby, WspolczynnikWzrostu FROM ZasadyWzrostu;";
-                
-                using (var command = new MySqlCommand(query, connection))
-                using (var reader = await command.ExecuteReaderAsync())
-                {
-                    while (await reader.ReadAsync())
-                    {
-                        rules.Add(new GrowthRule
-                        {
-                            PlantTypeId = reader.GetInt32("ID_Roslina"),
-                            SoilTypeId = reader.GetInt32("ID_Gleby"),
-                            GrowthMultiplier = reader.GetFloat("WspolczynnikWzrostu"),
-                        });
-                    }
-                }
-
-                GD.Print($"[DB] Załadowano {rules.Count} zasad wzorstu");
-            }
-            catch (Exception ex)
-            {
-                GD.PrintErr($"[DB ERROR] Nie udało się załadować zasad wzrostu: {ex.Message}");
-            }
-
-            return rules;
-        }
-    }
-
+    
     public async Task<List<SoilData>> LoadSoilDataAsync()
     {
         var soilTypes = new List<SoilData>();
