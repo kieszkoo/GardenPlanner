@@ -274,7 +274,7 @@ public partial class GardenManager : Node2D
 		ghostSprite = new Sprite2D();
 		ghostSprite.Modulate = new Color(1, 1, 1, 0.5f);
 		ghostSprite.Visible = false;
-		ghostSprite.Scale = new Vector2(0.5f, 0.5f);
+		ghostSprite.Scale = new Vector2(0.1f, 0.1f);
 		ghostSprite.ZIndex = 100;
 		AddChild(ghostSprite);
 	}

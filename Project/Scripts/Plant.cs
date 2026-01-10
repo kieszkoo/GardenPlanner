@@ -36,7 +36,7 @@ public partial class Plant : Area2D
 		if (ResourceLoader.Exists(data.TexturePath))
 		{
 			sprite.Texture = (Texture2D)ResourceLoader.Load(data.TexturePath);
-			sprite.Scale = new Vector2(0.3f, 0.3f);
+			sprite.Scale = new Vector2(0.1f, 0.1f);
 			sprite.ShowBehindParent = true;
 		}
 		else
