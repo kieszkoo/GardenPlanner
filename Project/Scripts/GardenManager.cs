@@ -6,6 +6,9 @@ using GardenPlanner.Database;
 
 public partial class GardenManager : Node2D
 {
+	private Vector2 _gardenSize = new Vector2(10,10);
+	private bool _isConfigured = false;
+
 	private PackedScene plantScene;
 	private List<Plant> plantedPlants = new List<Plant>();
 
@@ -24,6 +27,11 @@ public partial class GardenManager : Node2D
 	private Button simulationButton;
 	private Button stopButton;
 	private Label dateLabel;
+	private Control _setupPanel;
+	private OptionButton _soilOptionButton;
+	private SpinBox _widthSpinBox;
+	private SpinBox _heightSpinBox;
+	private Button _confirmSetupButton;
 	
 	private PlantTypeData? selectedPlantType = null;
 
@@ -44,7 +52,34 @@ public partial class GardenManager : Node2D
 		AddChild(dbManager);
 
 		await LoadInitialDataAsync();
+
+		_setupPanel = GetNodeOrNull<Control>("SetupPanel");
+		_soilOptionButton = GetNodeOrNull<OptionButton>("SetupPanel/SoilOption");
+		_widthSpinBox = GetNodeOrNull<SpinBox>("SetupPanel/Width");
+		_heightSpinBox = GetNodeOrNull<SpinBox>("SetupPanel/Height");
+		_confirmSetupButton = GetNodeOrNull<Button>("SetupPanel/ConfirmButton");
 		
+
+		if (_confirmSetupButton != null)
+		{
+			_confirmSetupButton.Pressed += OnSetupConfirmed;
+		}
+
+		if (_widthSpinBox != null){
+			_widthSpinBox.Value = 10;
+			_widthSpinBox.MinValue = 2;
+			_widthSpinBox.MaxValue = 50;
+		}
+
+		if (_heightSpinBox != null){
+			_heightSpinBox.Value = 10;
+			_heightSpinBox.MinValue = 2;
+			_heightSpinBox.MaxValue = 50;
+		}
+
+		PopulateSoilOptions();
+
+
 		plantScene = ResourceLoader.Load<PackedScene>("res://Scenes/Plant.tscn");
 
 		if (plantScene == null)
@@ -68,7 +103,55 @@ public partial class GardenManager : Node2D
 		CreateGhostSprite();
 		SetupSimulationTimer();
 		SetupControlButtons();
+
+		if (plantListContainer != null) plantListContainer.Visible = false;
 	}
+
+	private void PopulateSoilOptions(){
+		if (_soilOptionButton == null) return;
+		_soilOptionButton.Clear();
+		foreach (var soil in availableSoilTypes){
+			_soilOptionButton.AddItem(soil.Name);
+		}
+	}
+	
+
+	private void OnSetupConfirmed()
+	{
+		if (_soilOptionButton != null)
+		{
+			int soilIndex = _soilOptionButton.Selected;
+			if (soilIndex >= 0 && soilIndex < availableSoilTypes.Count) 
+				currentSoilType = availableSoilTypes[soilIndex];
+		}
+
+		float width = 10;
+		float height = 10;
+
+		if (_widthSpinBox != null) width = (float)_widthSpinBox.Value;
+		if (_heightSpinBox != null) height = (float)_heightSpinBox.Value;
+
+		_gardenSize = new Vector2(width, height);
+
+		_isConfigured = true;
+		if (_setupPanel != null) _setupPanel.Visible = false;
+		if (plantListContainer != null) plantListContainer.Visible = true;
+		
+		GD.Print($"Ogród skonfigurowany: {_gardenSize.X}x{_gardenSize.Y}m, Gleba: {currentSoilType.Name}");
+		QueueRedraw(); 
+	}
+
+	public override void _Draw()
+	{
+		if (!_isConfigured) return;
+
+		Vector2 sizeInPixels = _gardenSize * PixelsPerMeter;
+		Rect2 gardenRect = new Rect2(new Vector2(300,100), sizeInPixels);
+		
+		DrawRect(gardenRect, new Color(0.5f, 0.4f, 0.2f, 0.2f), true);
+		DrawRect(gardenRect, Colors.White, false, 2.0f);
+	}
+
 	
 	private void SetupPlantListUI()
 	{
@@ -287,6 +370,16 @@ public partial class GardenManager : Node2D
 	
 	public void PlacePlant(PlantTypeData typeData, Vector2 position)
 	{
+
+		if (!_isConfigured) return;
+
+		Vector2 maxPos = _gardenSize * PixelsPerMeter + new Vector2(300,100);
+		if (position.X < 300 || position.Y < 100 || position.X > maxPos.X || position.Y > maxPos.Y)
+		{
+			GD.Print("Nie można sadzić poza granicami ogrodu!");
+			return;
+		}
+
 		if (plantScene == null) return;
 
 		var newPlant = plantScene.Instantiate<Plant>();
