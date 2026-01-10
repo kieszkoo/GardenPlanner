@@ -41,7 +41,7 @@ INSERT INTO Roslina (Nazwa, Tekstura2D, MaxWysokosc, MaxSzerokosc, GlebokoscKorz
 ('Jarzab pospolity', 'res://Textures/Plants/lisciaste.png', 12.00, 6.00, 1.50, 3.00, 7.0, 1),
 
 -- KRZEWY (Typ_ID = 2)
-('Roza dzika', 'res://Textures/Plants/krzew.jpg', 2.50, 2.00, 1.00, 1.00, 8.0, 2),
+('Roza dzika', 'res://Textures/Plants/krzew.png', 2.50, 2.00, 1.00, 1.00, 8.0, 2),
 ('Bez czarny', 'res://Textures/Plants/krzew.png', 5.00, 4.00, 1.50, 2.00, 6.0, 2),
 ('Jasminowiec wonny', 'res://Textures/Plants/jasmine.png', 3.00, 2.00, 1.20, 1.00, 7.5, 2),
 ('Lilak pospolity', 'res://Textures/Plants/krzew.png', 4.00, 3.00, 1.50, 1.50, 8.0, 2),
@@ -53,7 +53,7 @@ INSERT INTO Roslina (Nazwa, Tekstura2D, MaxWysokosc, MaxSzerokosc, GlebokoscKorz
 ('Mahonia pospolita', 'res://Textures/Plants/krzew.png', 1.00, 1.00, 0.50, 0.50, 3.0, 2),
 
 -- PAPROCIE (Typ_ID = 4)
-('Paproc zwyczajna', 'res://Textures/Plants/paproc.jpg', 1.00, 1.00, 0.40, 0.50, 2.0, 4),
+('Paproc zwyczajna', 'res://Textures/Plants/paproc.png', 1.00, 1.00, 0.40, 0.50, 2.0, 4),
 ('Nerecznica samcza', 'res://Textures/Plants/paproc.png', 1.20, 0.80, 0.40, 0.40, 2.5, 4),
 ('Wietlica samicza', 'res://Textures/Plants/paproc.png', 1.00, 0.70, 0.30, 0.35, 3.0, 4),
 ('Pioropusznik strusi', 'res://Textures/Plants/paproc.png', 1.50, 1.00, 0.50, 0.50, 3.5, 4),
