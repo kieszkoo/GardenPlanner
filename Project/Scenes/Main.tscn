@@ -28,6 +28,14 @@ offset_right = 1152.0
 offset_bottom = 64.0
 text = "Stop"
 
+[node name="SaveButton" type="Button" parent="Control"]
+layout_mode = 0
+offset_left = 932.0
+offset_top = 31.0
+offset_right = 1152.0
+offset_bottom = 62.0
+text = "Zapisz Stan Ogrodu"
+
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="Panel" type="Panel" parent="CanvasLayer"]
