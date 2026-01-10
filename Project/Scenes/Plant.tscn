@@ -11,3 +11,11 @@ script = ExtResource("1_t27ga")
 shape = SubResource("CircleShape2D_mb61i")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+
+[node name="InfoLabel" type="Label" parent="."]
+visible = false
+z_index = 100
+offset_left = -40.0
+offset_top = -20.0
+offset_bottom = 3.0
+horizontal_alignment = 1
