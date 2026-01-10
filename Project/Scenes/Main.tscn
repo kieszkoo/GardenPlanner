@@ -68,4 +68,49 @@ offset_right = 717.0
 offset_bottom = 23.0
 text = "Rok: 0, Miesiąc: 0"
 
+[node name="SetupPanel" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 275.0
+offset_top = 106.0
+offset_right = 1184.0
+offset_bottom = 498.0
+
+[node name="SoilOption" type="OptionButton" parent="SetupPanel"]
+layout_mode = 0
+offset_left = 121.0
+offset_top = 52.0
+offset_right = 276.0
+offset_bottom = 86.0
+
+[node name="ConfirmButton" type="Button" parent="SetupPanel"]
+layout_mode = 0
+offset_left = 294.0
+offset_top = 119.0
+offset_right = 400.0
+offset_bottom = 150.0
+text = "Potwierdź"
+
+[node name="Width" type="SpinBox" parent="SetupPanel"]
+layout_mode = 0
+offset_left = 435.0
+offset_top = 52.0
+offset_right = 521.5625
+offset_bottom = 86.0
+
+[node name="Height" type="SpinBox" parent="SetupPanel"]
+layout_mode = 0
+offset_left = 323.0
+offset_top = 52.0
+offset_right = 409.5625
+offset_bottom = 86.0
+
+[node name="Label" type="Label" parent="SetupPanel"]
+layout_mode = 0
+offset_left = 123.0
+offset_top = 15.0
+offset_right = 637.0
+offset_bottom = 38.0
+text = "Typ gleby                              Wysokość 	         Szerokość "
+
 [connection signal="pressed" from="Control/SimulationButton" to="." method="_on_simulation_button_pressed"]

@@ -8,22 +8,54 @@ public partial class Plant : Area2D
 	public float CurrentHeight { get; private set; }
 	public float CurrentRadius { get; private set; }
 	public int AgeMonths { get; private set; }
+	
+	private int DbId { get; set; }
 	private const float PixelsPerMeter = 50.0f;
 
 	private List<Plant> collidingNeighbors = new List<Plant>();
 	
 	private CollisionShape2D collisionShape;
 	private Sprite2D sprite;
+	private Label infoLabel;
 	
 	public override void _Ready()
 	{
 		collisionShape = GetNode<CollisionShape2D>("CollisionShape2D");
 		sprite = GetNode<Sprite2D>("Sprite2D");
+
+		infoLabel = GetNodeOrNull <Label>("InfoLabel");
+
+		if (collisionShape == null) GD.PrintErr("Brak CollisionShape2D w Plant");
+		if (sprite == null) GD.PrintErr("Brak Sprite2D w Plant");
 		
 		ZIndex = 10;
 
+		if (infoLabel != null) 
+		{
+			infoLabel.Visible = false;
+			infoLabel.ZIndex = 200; 
+
+			var style = new StyleBoxFlat();
+			style.BgColor = new Color(0.05f, 0.05f, 0.05f, 0.85f); 
+			
+			style.CornerRadiusTopLeft = 5;
+			style.CornerRadiusTopRight = 5;
+			style.CornerRadiusBottomRight = 5;
+			style.CornerRadiusBottomLeft = 5;
+			
+			style.ExpandMarginLeft = 8;
+			style.ExpandMarginRight = 8;
+			style.ExpandMarginTop = 4;
+			style.ExpandMarginBottom = 4;
+			
+			infoLabel.AddThemeStyleboxOverride("normal", style);
+		}
+
 		AreaEntered += OnAreaEntered;
 		AreaExited += OnAreaExited;
+
+		MouseEntered += OnMouseEntered;
+		MouseExited += OnMouseExited;
 	}
 
 	public void Initialize(PlantTypeData data)
@@ -36,7 +68,7 @@ public partial class Plant : Area2D
 		if (ResourceLoader.Exists(data.TexturePath))
 		{
 			sprite.Texture = (Texture2D)ResourceLoader.Load(data.TexturePath);
-			sprite.Scale = new Vector2(0.3f, 0.3f);
+			sprite.Scale = new Vector2(0.1f, 0.1f);
 			sprite.ShowBehindParent = true;
 		}
 		else
@@ -77,9 +109,43 @@ public partial class Plant : Area2D
 		{
 			circle.Radius = pixelRadius;
 		}
+		
+		if (infoLabel != null && infoLabel.Visible)
+		{
+			UpdateLabelText();
+		}
 		// float scaleFactor = CurrentRadius / (TypeData.MaxWidth / 2.0f);
 		// sprite.Scale = new Vector2(scaleFactor, scaleFactor);
 		QueueRedraw();
+	}
+
+	private void OnMouseEntered()
+	{
+		if (infoLabel != null)
+		{
+			UpdateLabelText();
+			infoLabel.Visible = true;
+
+			if (sprite != null) sprite.Modulate = new Color(1.2f, 1.2f, 1.2f);
+		}
+	}
+
+	private void OnMouseExited()
+	{
+		if (infoLabel != null)
+		{
+			infoLabel.Visible = false;
+
+			if (sprite != null) sprite.Modulate = Colors.White;
+		}
+	}
+
+	private void UpdateLabelText()
+	{
+		infoLabel.Text = $"{TypeData.Name}\n{AgeMonths} msc\n{CurrentHeight:F1} m";
+		
+		float pixelRadius = CurrentRadius * PixelsPerMeter;
+		infoLabel.Position = new Vector2(-20, -pixelRadius -30);
 	}
 
 	public void SimulateMonth(float growthFactorSoil, float sunLevel)
