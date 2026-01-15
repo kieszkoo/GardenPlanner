@@ -83,6 +83,13 @@ offset_right = 645.0
 offset_bottom = 30.0
 text = "1x"
 
+[node name="ResetButton" type="Button" parent="CanvasLayer/Control"]
+layout_mode = 0
+offset_left = 822.0
+offset_right = 932.0
+offset_bottom = 31.0
+text = "Reset"
+
 [node name="SetupPanel" type="Control" parent="."]
 layout_mode = 3
 anchors_preset = 0

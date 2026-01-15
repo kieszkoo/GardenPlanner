@@ -30,6 +30,7 @@ public partial class GardenManager : Node2D
 	private Button saveButton;
 	private Button loadButton;
 	private Button speedButton;
+	private Button resetButton;
 	private FileDialog saveFileDialog;
 	private FileDialog loadFileDialog;
 	private Label dateLabel;
@@ -318,6 +319,14 @@ public partial class GardenManager : Node2D
 				speedButton.Pressed += OnSpeedButtonPressed;
 			speedButton.Visible = true;
 		}
+		
+		resetButton = GetNodeOrNull<Button>("CanvasLayer/Control/ResetButton");
+		if (resetButton != null)
+		{
+			if (!resetButton.IsConnected(Button.SignalName.Pressed, Callable.From(OnResetButtonPressed)))
+				resetButton.Pressed += OnResetButtonPressed;
+			resetButton.Visible = true;
+		}
 	}
 
 	private void CreateGhostSprite()
@@ -454,7 +463,7 @@ public partial class GardenManager : Node2D
 					}
 				}
 			}
-			
+
 			//Przesuwanie kamery
 			if (mouseButton.ButtonIndex == MouseButton.Middle)
 			{
@@ -469,31 +478,72 @@ public partial class GardenManager : Node2D
 					_isPanning = false;
 				}
 			}
-			
+
 			//Sadzenie / Anulowanie
-			if (mouseButton.ButtonIndex == MouseButton.Left)
+			if (mouseButton.Pressed)
 			{
-				if (selectedPlantType != null)
+				if (mouseButton.ButtonIndex == MouseButton.Left)
 				{
-					if (_setupPanel != null && _setupPanel.Visible) 
-						isMouseOverUI = true;
-					if (!isMouseOverUI)
+					if (selectedPlantType != null)
 					{
-						ulong now = Time.GetTicksMsec();
-						if (now - _lastPlantTime > 200)
+						if (_setupPanel != null && _setupPanel.Visible)
+							isMouseOverUI = true;
+						if (!isMouseOverUI)
 						{
-							PlacePlant(selectedPlantType.Value, GetGlobalMousePosition());
-							_lastPlantTime = now;
+							ulong now = Time.GetTicksMsec();
+							if (now - _lastPlantTime > 200)
+							{
+								PlacePlant(selectedPlantType.Value, GetGlobalMousePosition());
+								_lastPlantTime = now;
+								GetViewport().SetInputAsHandled();
+							}
+						}
+					}
+					else
+					{
+						if (!isMouseOverUI)
+						{
+							RemovePlantAt(GetGlobalMousePosition());
 							GetViewport().SetInputAsHandled();
 						}
 					}
 				}
-			}
-			else if (mouseButton.ButtonIndex == MouseButton.Right)
-			{
-				CancelPlacement();
+				else if (mouseButton.ButtonIndex == MouseButton.Right)
+				{
+					CancelPlacement();
+				}
 			}
 		}
+	}
+
+	private void RemovePlantAt(Vector2 position)
+	{
+		var plantsUnderCursor = new List<Plant>();
+		foreach (var plant in plantedPlants)
+		{
+			float clickRadius = plant.CurrentRadius * PixelsPerMeter;
+			if (plant.Position.DistanceTo(position) <= clickRadius)
+			{
+				plantsUnderCursor.Add(plant);
+			}
+		}
+
+		if (plantsUnderCursor.Count >= 0)
+		{
+			plantsUnderCursor.Sort((a, b) =>
+			{
+				int radiusCompare = a.CurrentRadius.CompareTo(b.CurrentRadius);
+				if(radiusCompare != 0) return radiusCompare;
+				return 0;
+			});
+			
+			Plant plantToRemove = plantsUnderCursor[0];
+			
+			plantedPlants.Remove(plantToRemove);
+			plantToRemove.QueueFree();
+			GD.Print($"Usunięto roślinę: {plantToRemove.TypeData.Name} z pozycji {position}.");
+		}
+		
 	}
 	
 	public Plant PlacePlant(PlantTypeData typeData, Vector2 position)
@@ -558,6 +608,38 @@ public partial class GardenManager : Node2D
 		}
 		
 		GD.Print($"Zmieniono prędkość symulacji na {timeScale}x");
+	}
+	
+	private void OnResetButtonPressed()
+	{
+		GD.Print("Resetowanie ogrodu...");
+		StopSimulation();
+		
+		foreach (var plant in plantedPlants)
+		{
+			plant.QueueFree();
+		}
+		plantedPlants.Clear();
+		
+		currentSimulationMonth = 0;
+		UpdateDateLabel(currentSimulationMonth);
+		
+		_isConfigured = false;
+		
+		if(_setupPanel != null) _setupPanel.Visible = true;
+		if(plantListContainer != null) plantListContainer.Visible = false;
+		if(simulationButton != null) simulationButton.Visible = true;
+		if(saveButton != null) saveButton.Visible = false;
+		if(_camera != null) _camera.Zoom = new Vector2(1, 1);
+		
+		_gardenSize = new Vector2(10, 10);
+		var gardenBg = GetNodeOrNull<ColorRect>("GardenBackground");
+		if (gardenBg != null)
+		{
+			gardenBg.Size = _gardenSize * PixelsPerMeter;
+		}
+		
+		GD.Print("Ogród zresetowany.");
 	}
 
 	private void StartSimulation()
