@@ -28,7 +28,10 @@ public partial class GardenManager : Node2D
 	private Button simulationButton;
 	private Button stopButton;
 	private Button saveButton;
+	private Button loadButton;
+	private Button speedButton;
 	private FileDialog saveFileDialog;
+	private FileDialog loadFileDialog;
 	private Label dateLabel;
 	private Control _setupPanel;
 	private OptionButton _soilOptionButton;
@@ -42,16 +45,32 @@ public partial class GardenManager : Node2D
 	private int simulationStepMonths = 1;
 	private int currentSimulationMonth = 0;
 	private float simulationSpeedSeconds = 0.5f;
+	private float timeScale = 1.0f;
 	private Timer simulationTimer;
 	private bool isSimulationRunning = false;
+	private ulong _lastPlantTime = 0;
+
 
 	private DatabaseManager dbManager;
+	
+	//KAMERA
+	private Camera2D _camera;
+	private bool _isPanning = false;
+	private Vector2 _panStartMousePos;
+	private Vector2 _panStartCameraPos;
+	private float _zoomSpeed = 0.1f;
+	private Vector2 _minZoom = new Vector2(0.1f, 0.1f);
+	private Vector2 _maxZoom = new Vector2(3.0f, 3.0f);
 	
 	public override async void _Ready()
 	{
 		GD.Print("Inicjalizacja Godot Garden Manager ...");
 		
+		SetupCamera(); //Inicajalizacja kamery
+		
 		SetupSaveDialog();
+		SetupLoadDialog();
+		
 		SetupControlButtons();
 
 		dbManager = new DatabaseManager();
@@ -108,9 +127,14 @@ public partial class GardenManager : Node2D
 
 		CreateGhostSprite();
 		SetupSimulationTimer();
-		SetupControlButtons();
 
 		if (plantListContainer != null) plantListContainer.Visible = false;
+	}
+
+	private void SetupCamera()
+	{
+		_camera = GetNodeOrNull<Camera2D>("Camera2D");
+		_camera.MakeCurrent();
 	}
 
 	private void PopulateSoilOptions(){
@@ -138,7 +162,7 @@ public partial class GardenManager : Node2D
 		if (_heightSpinBox != null) height = (float)_heightSpinBox.Value;
 
 		_gardenSize = new Vector2(width, height);
-
+		
 		_isConfigured = true;
 		if (_setupPanel != null) _setupPanel.Visible = false;
 		if (plantListContainer != null) plantListContainer.Visible = true;
@@ -240,7 +264,7 @@ public partial class GardenManager : Node2D
 	private void SetupSimulationTimer()
 	{
 		simulationTimer = new  Timer();
-		simulationTimer.WaitTime = simulationSpeedSeconds;
+		simulationTimer.WaitTime = simulationSpeedSeconds / timeScale;
 		simulationTimer.OneShot = false;
 		simulationTimer.Timeout += OnSimulationTimerTimeout;
 		AddChild(simulationTimer);
@@ -248,7 +272,7 @@ public partial class GardenManager : Node2D
 
 	private void SetupControlButtons()
 	{
-		simulationButton = GetNodeOrNull<Button>("Control/SimulationButton");
+		simulationButton = GetNodeOrNull<Button>("CanvasLayer/Control/SimulationButton");
 		if(simulationButton != null) 
 		{ 
 			if (!simulationButton.IsConnected(Button.SignalName.Pressed, Callable.From(OnSimulationButtonPressed)))
@@ -256,10 +280,10 @@ public partial class GardenManager : Node2D
 		}
 		else
 		{
-			GD.PrintErr("BŁĄD: Nie znaleziono przycisku Control/SimulationButton");
+			GD.PrintErr("BŁĄD: Nie znaleziono przycisku CanvasLayer/Control/SimulationButton");
 		}
 		
-		stopButton = GetNodeOrNull<Button>("Control/StopButton");
+		stopButton = GetNodeOrNull<Button>("CanvasLayer/Control/StopButton");
 		if(stopButton != null) 
 		{ 
 			if (!stopButton.IsConnected(Button.SignalName.Pressed, Callable.From(OnStopButtonPressed)))
@@ -268,15 +292,31 @@ public partial class GardenManager : Node2D
 		}
 		else
 		{
-			GD.PrintErr("BŁĄD: Nie znaleziono przycisku Control/StopButton");
+			GD.PrintErr("BŁĄD: Nie znaleziono przycisku CanvasLayer/Control/StopButton");
 		}
 		
-		saveButton = GetNodeOrNull<Button>("Control/SaveButton");
+		saveButton = GetNodeOrNull<Button>("CanvasLayer/Control/SaveButton");
 		if (saveButton != null)
 		{
 			if (!saveButton.IsConnected(Button.SignalName.Pressed, Callable.From(OnSaveButtonPressed)))
 				saveButton.Pressed += OnSaveButtonPressed;
 			saveButton.Visible = false;
+		}
+		
+		loadButton = GetNodeOrNull<Button>("CanvasLayer/Control/LoadButton");
+		if (loadButton != null)
+		{
+			if (!loadButton.IsConnected(Button.SignalName.Pressed, Callable.From(OnLoadButtonPressed)))
+				loadButton.Pressed += OnLoadButtonPressed;
+			loadButton.Visible = true;
+		}
+		
+		speedButton = GetNodeOrNull<Button>("CanvasLayer/Control/SpeedButton");
+		if (speedButton != null)
+		{
+			if (!speedButton.IsConnected(Button.SignalName.Pressed, Callable.From(OnSpeedButtonPressed)))
+				speedButton.Pressed += OnSpeedButtonPressed;
+			speedButton.Visible = true;
 		}
 	}
 
@@ -361,21 +401,92 @@ public partial class GardenManager : Node2D
 
 	public override void _UnhandledInput(InputEvent @event)
 	{
-		if (@event is InputEventMouseMotion)
+		if (!_isConfigured) return;
+		if (_camera == null) return;
+
+		bool isMouseOverUI = false;
+		var panel = GetNodeOrNull<Control>("CanvasLayer/Panel");
+		if (panel != null && panel.Visible)
+		{
+			if (panel.GetGlobalRect().HasPoint(GetViewport().GetMousePosition()))
+			{
+				isMouseOverUI = true;
+			}
+		}
+		
+		if (@event is InputEventMouseMotion mouseMotion)
 		{
 			if (selectedPlantType != null && ghostSprite.Visible)
 			{
 				ghostSprite.GlobalPosition = GetGlobalMousePosition();
 			}
+			
+			if (_isPanning)
+			{
+				Vector2 currentMousePos = mouseMotion.Position;
+				Vector2 diff = currentMousePos - _panStartMousePos;
+				_camera.Position = _panStartCameraPos - (diff / _camera.Zoom);
+			}
 		}
 
-		if (@event is InputEventMouseButton mouseButton && mouseButton.Pressed)
+		if (@event is InputEventMouseButton mouseButton)
 		{
+			//Zoomowanie kamery
+			if (mouseButton.ButtonIndex == MouseButton.WheelUp)
+			{
+				if (!isMouseOverUI)
+				{
+					Vector2 newZoom = _camera.Zoom + new Vector2(_zoomSpeed, _zoomSpeed);
+					if (newZoom.X < _maxZoom.X)
+					{
+						_camera.Zoom = newZoom;
+					}
+				}
+			}
+			else if (mouseButton.ButtonIndex == MouseButton.WheelDown)
+			{
+				if (!isMouseOverUI)
+				{
+					Vector2 newZoom = _camera.Zoom - new Vector2(_zoomSpeed, _zoomSpeed);
+					if (newZoom.X < _maxZoom.X)
+					{
+						_camera.Zoom = newZoom;
+					}
+				}
+			}
+			
+			//Przesuwanie kamery
+			if (mouseButton.ButtonIndex == MouseButton.Middle)
+			{
+				if (mouseButton.Pressed)
+				{
+					_isPanning = true;
+					_panStartMousePos = mouseButton.Position;
+					_panStartCameraPos = _camera.Position;
+				}
+				else
+				{
+					_isPanning = false;
+				}
+			}
+			
+			//Sadzenie / Anulowanie
 			if (mouseButton.ButtonIndex == MouseButton.Left)
 			{
 				if (selectedPlantType != null)
 				{
-					PlacePlant(selectedPlantType.Value, GetGlobalMousePosition());
+					if (_setupPanel != null && _setupPanel.Visible) 
+						isMouseOverUI = true;
+					if (!isMouseOverUI)
+					{
+						ulong now = Time.GetTicksMsec();
+						if (now - _lastPlantTime > 200)
+						{
+							PlacePlant(selectedPlantType.Value, GetGlobalMousePosition());
+							_lastPlantTime = now;
+							GetViewport().SetInputAsHandled();
+						}
+					}
 				}
 			}
 			else if (mouseButton.ButtonIndex == MouseButton.Right)
@@ -385,19 +496,19 @@ public partial class GardenManager : Node2D
 		}
 	}
 	
-	public void PlacePlant(PlantTypeData typeData, Vector2 position)
+	public Plant PlacePlant(PlantTypeData typeData, Vector2 position)
 	{
 
-		if (!_isConfigured) return;
+		if (!_isConfigured) return null;
 
 		Vector2 maxPos = _gardenSize * PixelsPerMeter + new Vector2(300,100);
 		if (position.X < 300 || position.Y < 100 || position.X > maxPos.X || position.Y > maxPos.Y)
 		{
 			GD.Print("Nie można sadzić poza granicami ogrodu!");
-			return;
+			return null;
 		}
 
-		if (plantScene == null) return;
+		if (plantScene == null) return null;
 
 		var newPlant = plantScene.Instantiate<Plant>();
 		AddChild(newPlant);
@@ -413,6 +524,8 @@ public partial class GardenManager : Node2D
 		
 		plantedPlants.Add(newPlant);
 		GD.Print($"Posadzono {typeData.Name} na pozycji {position}.");
+		
+		return newPlant;
 	}
 	
 	private void OnSimulationButtonPressed()
@@ -426,6 +539,27 @@ public partial class GardenManager : Node2D
 		StopSimulation();
 	}
 
+	private void OnSpeedButtonPressed()
+	{
+		if (timeScale == 1.0f)
+		{
+			timeScale = 2.0f;
+			speedButton.Text = "2x";
+		}
+		else
+		{
+			timeScale = 1.0f;
+			speedButton.Text = "1x";
+		}
+		
+		if (isSimulationRunning && simulationTimer != null)
+		{
+			simulationTimer.WaitTime = simulationSpeedSeconds / timeScale;	
+		}
+		
+		GD.Print($"Zmieniono prędkość symulacji na {timeScale}x");
+	}
+
 	private void StartSimulation()
 	{
 		if (plantedPlants.Count == 0)
@@ -437,7 +571,9 @@ public partial class GardenManager : Node2D
 		simulationButton.Disabled = true;
 		if(stopButton != null) stopButton.Visible = true;
 		if(saveButton != null) saveButton.Visible = false;
+		if(loadButton != null) loadButton.Visible = false;
 		
+		simulationTimer.WaitTime = simulationSpeedSeconds / timeScale;
 		simulationTimer.Start();
 		GD.Print($"--- Rozpoczecie symulacji ---");
 	}
@@ -450,6 +586,7 @@ public partial class GardenManager : Node2D
 		if(simulationButton != null) simulationButton.Disabled = false;
 		if(stopButton != null) stopButton.Visible = false;
 		if(saveButton != null) saveButton.Visible = true;
+		if(loadButton != null) loadButton.Visible = true;
 		
 		GD.Print($"--- Zatrzymanie symulacji ---");
 	}
@@ -609,10 +746,14 @@ public partial class GardenManager : Node2D
 	{
 		GD.Print("Zapisywanie stanu ogrodu...");
 		
+		var gardenBg = GetNodeOrNull<ColorRect>("GardenBackground");
+		
 		var saveData = new GardenSaveData
 		{
 			CurrentSimulationMonth = currentSimulationMonth,
 			SoilTypeID = currentSoilType.Id,
+			GardenWidth = gardenBg != null ? (int)(gardenBg.Size.X / PixelsPerMeter) : (int)_gardenSize.X,
+			GardenHeight = gardenBg != null ? (int)(gardenBg.Size.Y / PixelsPerMeter) : (int)_gardenSize.Y,
 			Plants = new List<PlantSaveData>()
 		};
 		
@@ -648,12 +789,139 @@ public partial class GardenManager : Node2D
 			GD.PrintErr($"Błąd podczas zapisywania stanu ogrodu: {e.Message}");
 		}
 	}
+	
+	private void SetupLoadDialog()
+	{
+		loadFileDialog = new FileDialog();
+		loadFileDialog.Name = "LoadFileDialog";
+		loadFileDialog.Access = FileDialog.AccessEnum.Filesystem; 
+		loadFileDialog.FileMode = FileDialog.FileModeEnum.OpenFile;
+		loadFileDialog.AddFilter("*.json", "Pliki JSON");
+		loadFileDialog.MinSize = new Vector2I(600, 400); 
+		if (!loadFileDialog.IsConnected(FileDialog.SignalName.FileSelected, Callable.From<string>(OnFileSelectedForLoad)))
+		{
+			loadFileDialog.FileSelected += OnFileSelectedForLoad;
+		}
+		
+		var canvas = GetNodeOrNull("CanvasLayer");
+		if (canvas != null)
+		{
+			canvas.AddChild(loadFileDialog);
+		}
+		else
+		{
+			GD.Print("Ostrzeżenie: Brak CanvasLayer, dodaję FileDialog bezpośrednio do sceny.");
+			AddChild(loadFileDialog);
+		}
+	}
+	
+	private void OnLoadButtonPressed()
+	{
+		if (loadFileDialog != null)
+		{
+			loadFileDialog.PopupCentered();
+		}
+		else
+		{
+			GD.PrintErr("BŁĄD: loadFileDialog jest null!");
+		}
+	}
+
+	private void OnFileSelectedForLoad(string path)
+	{
+		LoadGardenState(path);
+	}
+
+	private void LoadGardenState(string path)
+	{
+		
+		GD.Print($"Wczytywanie stanu ogrodu z: {path}...");
+		try
+		{
+			using var file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
+			if (file == null)
+			{
+				GD.PrintErr($"Błąd otwarcia pliku do wczytania: {FileAccess.GetOpenError()}");
+				return;
+			}
+
+			string jsonString = file.GetAsText();
+			GardenSaveData saveData = JsonSerializer.Deserialize<GardenSaveData>(jsonString);
+
+			if (saveData == null)
+			{
+				GD.PrintErr("Błąd deserializacji danych ogrodu.");
+				return;
+			}
+
+			foreach (var plant in plantedPlants)
+			{
+				plant.QueueFree();
+			}
+
+			plantedPlants.Clear();
+
+			currentSimulationMonth = saveData.CurrentSimulationMonth;
+			UpdateDateLabel(currentSimulationMonth);
+
+			var savedSoil = availableSoilTypes.FirstOrDefault(s => s.Id == saveData.SoilTypeID);
+			if (savedSoil.Id != 0)
+			{
+				currentSoilType = savedSoil;
+				GD.Print($"Przywrócono typ gleby: {currentSoilType.Name}");
+			}
+			
+			if (saveData.GardenWidth > 0 && saveData.GardenHeight > 0)
+			{
+				_gardenSize = new Vector2(saveData.GardenWidth, saveData.GardenHeight);
+				var gardenBg = GetNodeOrNull<ColorRect>("GardenBackground");
+				if (gardenBg != null)
+				{
+					gardenBg.Size = _gardenSize * PixelsPerMeter;
+				}
+			}
+			
+			_isConfigured = true;
+			_setupPanel.Visible = false;
+			QueueRedraw();	
+			if (plantListContainer != null) plantListContainer.Visible = true;
+			
+			foreach (var plantData in saveData.Plants)
+			{
+				var typeData = availablePlantTypes.FirstOrDefault(p => p.Id == plantData.TypeID);
+				if (typeData.Id == 0)
+				{
+					GD.PrintErr($"Nie znaleziono typu rośliny o ID: {plantData.TypeID}. Pomijam.");
+					continue;
+				}
+				
+				Vector2 pos = new  Vector2(plantData.PositionX, plantData.PositionY);
+				Plant newPlant = PlacePlant(typeData, pos);
+
+				if (newPlant != null)
+				{
+					newPlant.LoadState(plantData.AgeMonths, plantData.CurrentHeight, plantData.CurrentRadius);
+				}
+			}
+		
+			GD.Print("Stan ogrodu wczytany pomyślnie");
+			
+			
+		}
+		catch (System.Exception e)
+		{
+			GD.PrintErr($"Błąd podczas wczytywania stanu ogrodu: {e.Message}");
+		}
+	}
 }
+
 
 public class GardenSaveData
 {
 	public int CurrentSimulationMonth { get; set; }
 	public int SoilTypeID { get; set; }
+	public int GardenWidth { get; set; }
+	public int GardenHeight { get; set; }
 	public List<PlantSaveData> Plants { get; set; } = new List<PlantSaveData>();
 }
 public class PlantSaveData

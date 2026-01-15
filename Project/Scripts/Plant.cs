@@ -88,12 +88,12 @@ public partial class Plant : Area2D
 			Color outlineColor;
 			if (collidingNeighbors.Count > 0)
 			{
-				fillColor = new Color(0.9f, 0.2f, 0.2f, 0.5f);		//Kolizja - kolor czerwony
+				fillColor = new Color(0.9f, 0.2f, 0.2f, 0.3f);		//Kolizja - kolor czerwony
 				outlineColor = Colors.DarkRed;
 			}
 			else
 			{
-				fillColor = new Color(0.2f, 0.8f, 0.2f, 0.5f);		// Brak kolizji - kolor zielony
+				fillColor = new Color(0.2f, 0.8f, 0.2f, 0.3f);		// Brak kolizji - kolor zielony
 				outlineColor = Colors.DarkGreen;
 			}
 			DrawCircle(Vector2.Zero, pixelRadius, fillColor);
@@ -197,5 +197,13 @@ public partial class Plant : Area2D
 			collidingNeighbors.Remove(neighbor);
 			QueueRedraw();
 		}
+	}
+	
+	public void LoadState(int ageMonths, float currentHeight, float currentRadius)
+	{
+		AgeMonths = ageMonths;
+		CurrentHeight = currentHeight;
+		CurrentRadius = currentRadius;
+		UpdateVisuals();
 	}
 }
