@@ -1,0 +1,16 @@
+{
+  "CurrentSimulationMonth": 1,
+  "SoilTypeID": 1,
+  "GardenWidth": 10,
+  "GardenHeight": 10,
+  "Plants": [
+    {
+      "TypeID": 8,
+      "PositionX": 516,
+      "PositionY": 337,
+      "AgeMonths": 1,
+      "CurrentHeight": 0.1252,
+      "CurrentRadius": 0.041733332
+    }
+  ]
+}
