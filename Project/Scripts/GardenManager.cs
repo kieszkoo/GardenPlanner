@@ -7,18 +7,10 @@ using GardenPlanner.Database;
 
 public partial class GardenManager : Node2D
 {
+	// Konfiguracja
 	private Vector2 _gardenSize = new Vector2(10,10);
 	private bool _isConfigured = false;
-
-	private PackedScene plantScene;
-	private List<Plant> plantedPlants = new List<Plant>();
-
-	private List<PlantTypeData> availablePlantTypes = new List<PlantTypeData>();
-	private List<SoilData> availableSoilTypes = new List<SoilData>();
-	
 	private const float PixelsPerMeter = 50.0f;
-
-	private SoilData currentSoilType = InitialData.SoilTypes[0];
 	
 	// UI
 	private VBoxContainer plantListContainer;
@@ -40,6 +32,15 @@ public partial class GardenManager : Node2D
 	private SpinBox _heightSpinBox;
 	private Button _confirmSetupButton;
 	
+	// Logika symulacja
+	private PackedScene plantScene;
+	private List<Plant> plantedPlants = new List<Plant>();
+
+	private List<PlantTypeData> availablePlantTypes = new List<PlantTypeData>();
+	private List<SoilData> availableSoilTypes = new List<SoilData>();
+	
+	private SoilData currentSoilType = InitialData.SoilTypes[0];
+	
 	private PlantTypeData? selectedPlantType = null;
 
 	private int totalYearsToSimulate = 10;
@@ -50,6 +51,18 @@ public partial class GardenManager : Node2D
 	private Timer simulationTimer;
 	private bool isSimulationRunning = false;
 	private ulong _lastPlantTime = 0;
+
+	// Pory roku
+	public enum Season
+	{
+		Spring,
+		Summer,
+		Autumn,
+		Winter
+	};
+	
+	private Season currentSeason = Season.Spring;
+
 
 
 	private DatabaseManager dbManager;
@@ -130,6 +143,63 @@ public partial class GardenManager : Node2D
 		SetupSimulationTimer();
 
 		if (plantListContainer != null) plantListContainer.Visible = false;
+
+		UpdateSeasonVisuals();
+	}
+
+	private void UpdateSeason(int monthTotal)
+	{
+		int monthInYear = ((monthTotal - 1) % 12) + 1;
+
+		Season newSeason;
+		if (monthInYear >= 3 && monthInYear <= 5) newSeason = Season.Spring;
+		else if (monthInYear >= 6 && monthInYear <= 8) newSeason = Season.Summer;
+		else if (monthInYear >= 9 && monthInYear <= 11) newSeason = Season.Autumn;
+		else newSeason = Season.Winter;
+
+		if (currentSeason != newSeason)
+		{
+			currentSeason = newSeason;
+			UpdateSeasonVisuals();
+			GD.Print($"Zmiana pory roku: {currentSeason}");
+		}
+	}
+
+	private void UpdateSeasonVisuals()
+	{
+		Color bgColor;
+		switch (currentSeason)
+		{
+			case Season.Spring:
+				bgColor = new Color(0.4f, 0.7f, 0.4f);
+				break;
+			case Season.Summer:
+				bgColor = new Color(0.2f, 0.6f, 0.2f);
+				break;
+			case Season.Autumn:
+				bgColor = new Color(0.7f, 0.5f, 0.3f);
+				break;
+			case Season.Winter:
+				bgColor = new Color(0.9f, 0.95f, 1.0f);
+				break;
+			default:
+				bgColor = new Color(0.3f, 0.3f, 0.3f);
+				break;
+		}
+		
+		RenderingServer.SetDefaultClearColor(bgColor);
+	}
+
+	private float GetSeasonGrowthModifier()
+	{
+		switch (currentSeason)
+		{
+			case Season.Spring: return 1.2f;
+			case Season.Summer: return 1.0f;
+			case Season.Autumn: return 0.5f;
+			case Season.Winter: return 0.0f;
+			default: return 1.0f;
+		}
 	}
 
 	private void SetupCamera()
@@ -698,13 +768,22 @@ public partial class GardenManager : Node2D
 
 	private void SimulateStep(int month)
 	{
+		UpdateSeason(month);
+		
 		int year = (month -1) / 12 + 1;
 		int monthInYear = ((month -1) % 12) + 1;
 		
 		GD.Print($"--- Symulacja Rok {year}, Miesiąc {monthInYear} ---");
 
+		float seasonFactor = GetSeasonGrowthModifier();
+
 		foreach (var plantA in plantedPlants)
 		{
+			if (seasonFactor <= 0.01f)
+			{
+				continue;
+			}
+			
 			float sunLevel = CalculateSunLevel(plantA);
 			float growthFactorSoil = GetGrowthFactor(plantA);
 			plantA.SimulateMonth(growthFactorSoil, sunLevel);
