@@ -62,6 +62,7 @@ public partial class GardenManager : Node2D
 	};
 	
 	private Season currentSeason = Season.Spring;
+	private Tween _colorTween;
 
 
 
@@ -98,7 +99,8 @@ public partial class GardenManager : Node2D
 		_heightSpinBox = GetNodeOrNull<SpinBox>("SetupPanel/Height");
 		_confirmSetupButton = GetNodeOrNull<Button>("SetupPanel/ConfirmButton");
 		
-
+		ApplyCustomTheme();
+		
 		if (_confirmSetupButton != null)
 		{
 			_confirmSetupButton.Pressed += OnSetupConfirmed;
@@ -136,6 +138,22 @@ public partial class GardenManager : Node2D
 		}
 		else
 		{
+			dateLabel.ZIndex = 200; 
+
+			var style = new StyleBoxFlat();
+			style.BgColor = new Color(0.05f, 0.05f, 0.05f, 0.85f); 
+			
+			style.CornerRadiusTopLeft = 5;
+			style.CornerRadiusTopRight = 5;
+			style.CornerRadiusBottomRight = 5;
+			style.CornerRadiusBottomLeft = 5;
+			
+			style.ExpandMarginLeft = 8;
+			style.ExpandMarginRight = 8;
+			style.ExpandMarginTop = 4;
+			style.ExpandMarginBottom = 4;
+			
+			dateLabel.AddThemeStyleboxOverride("normal", style);
 			UpdateDateLabel(0);
 		}
 
@@ -187,7 +205,23 @@ public partial class GardenManager : Node2D
 				break;
 		}
 		
-		RenderingServer.SetDefaultClearColor(bgColor);
+		Color startColor = RenderingServer.GetDefaultClearColor();
+
+		if (_colorTween != null && _colorTween.IsValid())
+		{
+			_colorTween.Kill();
+		}
+
+		_colorTween = CreateTween();
+
+		_colorTween.TweenMethod(
+			Callable.From<Color>(c => RenderingServer.SetDefaultClearColor(c)), 
+			startColor, 
+			bgColor, 
+			1.5f 
+		);
+		_colorTween.SetEase(Tween.EaseType.InOut).SetTrans(Tween.TransitionType.Cubic);
+
 	}
 
 	private float GetSeasonGrowthModifier()
@@ -708,6 +742,9 @@ public partial class GardenManager : Node2D
 		{
 			gardenBg.Size = _gardenSize * PixelsPerMeter;
 		}
+
+		_camera.Position = new Vector2(600, 300);
+		QueueRedraw();
 		
 		GD.Print("Ogród zresetowany.");
 	}
@@ -1073,6 +1110,55 @@ public partial class GardenManager : Node2D
 		{
 			GD.PrintErr($"Błąd podczas wczytywania stanu ogrodu: {e.Message}");
 		}
+	}
+	
+	private void ApplyCustomTheme()
+	{
+		var theme = new Theme();
+
+		// Kolory
+		var baseGreen = new Color(0.26f, 0.42f, 0.28f); // Ciemna zieleń
+		var hoverGreen = new Color(0.34f, 0.52f, 0.36f); // Jaśniejsza
+		var pressedGreen = new Color(0.19f, 0.32f, 0.21f); // Bardzo ciemna
+		var panelBg = new Color(0.12f, 0.13f, 0.12f, 0.86f); // Półprzezroczysty czarny
+
+		// StyleBox dla przycisków
+		var btnNormal = new StyleBoxFlat {
+			BgColor = baseGreen, CornerRadiusTopLeft = 6, CornerRadiusTopRight = 6, CornerRadiusBottomRight = 6, CornerRadiusBottomLeft = 6,
+			BorderWidthBottom = 3, BorderColor = pressedGreen, ContentMarginLeft = 10, ContentMarginRight = 10, ContentMarginTop = 5, ContentMarginBottom = 5
+		};
+		var btnHover = new StyleBoxFlat {
+			BgColor = hoverGreen, CornerRadiusTopLeft = 6, CornerRadiusTopRight = 6, CornerRadiusBottomRight = 6, CornerRadiusBottomLeft = 6,
+			BorderWidthBottom = 3, BorderColor = pressedGreen, ContentMarginLeft = 10, ContentMarginRight = 10, ContentMarginTop = 5, ContentMarginBottom = 5
+		};
+		var btnPressed = new StyleBoxFlat {
+			BgColor = pressedGreen, CornerRadiusTopLeft = 6, CornerRadiusTopRight = 6, CornerRadiusBottomRight = 6, CornerRadiusBottomLeft = 6,
+			BorderWidthTop = 2, BorderColor = new Color(0,0,0,0), ContentMarginLeft = 10, ContentMarginRight = 10, ContentMarginTop = 6, ContentMarginBottom = 4
+		};
+
+		// StyleBox dla Paneli
+		var pnlStyle = new StyleBoxFlat {
+			BgColor = panelBg, CornerRadiusTopLeft = 12, CornerRadiusTopRight = 12, CornerRadiusBottomRight = 12, CornerRadiusBottomLeft = 12,
+			BorderWidthLeft = 2, BorderWidthTop = 2, BorderWidthRight = 2, BorderWidthBottom = 2, BorderColor = hoverGreen
+		};
+
+		// Przypisanie styli do Theme
+		theme.SetStylebox("normal", "Button", btnNormal);
+		theme.SetStylebox("hover", "Button", btnHover);
+		theme.SetStylebox("pressed", "Button", btnPressed);
+		theme.SetStylebox("panel", "Panel", pnlStyle);
+		
+		theme.SetColor("font_color", "Button", Colors.WhiteSmoke);
+		theme.SetColor("font_color", "Label", new Color(0.9f, 0.94f, 0.9f));
+
+		// Aplikacja motywu do głównych kontenerów
+		var setupPanel = GetNodeOrNull<Control>("SetupPanel");
+		var sidePanel = GetNodeOrNull<Panel>("CanvasLayer/Panel");
+		var controlPanel = GetNodeOrNull<Control>("CanvasLayer/Control");
+
+		if (setupPanel != null) setupPanel.Theme = theme;
+		if (sidePanel != null) sidePanel.Theme = theme;
+		if (controlPanel != null) controlPanel.Theme = theme;
 	}
 }
 
