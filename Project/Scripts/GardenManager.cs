@@ -881,8 +881,8 @@ public partial class GardenManager : Node2D
 	
 	private void TriggerBoarEvent()
 	{
-		// 1% szansy na pojawienie się dzika w danym miesiącu
-		if (GD.Randf() > 0.01f) return;
+		// 1.5% szansy na pojawienie się dzika w danym miesiącu
+		if (GD.Randf() > 0.015f) return;
 
 		// Zakres ogrodu
 		float minX = 300;

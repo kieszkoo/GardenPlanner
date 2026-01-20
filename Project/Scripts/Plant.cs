@@ -57,6 +57,18 @@ public partial class Plant : Area2D
 		MouseEntered += OnMouseEntered;
 		MouseExited += OnMouseExited;
 	}
+	
+	public override void _Process(double delta)
+	{
+		if (infoLabel != null && infoLabel.Visible)
+		{
+			var camera = GetViewport().GetCamera2D();
+			if (camera != null)
+			{
+				infoLabel.Scale = Vector2.One / camera.Zoom;
+			}
+		}
+	}
 
 	public void Initialize(PlantTypeData data)
 	{
@@ -125,6 +137,8 @@ public partial class Plant : Area2D
 		{
 			UpdateLabelText();
 			infoLabel.Visible = true;
+			
+			_Process(0);
 
 			if (sprite != null) sprite.Modulate = new Color(1.2f, 1.2f, 1.2f);
 		}
@@ -142,7 +156,7 @@ public partial class Plant : Area2D
 
 	private void UpdateLabelText()
 	{
-		infoLabel.Text = $"{TypeData.Name}\n{AgeMonths} msc\n{CurrentHeight:F1} m";
+		infoLabel.Text = $"{TypeData.Name}\n{AgeMonths} msc\n W {CurrentHeight:F1} m, Sz {2 * CurrentRadius:F1} m";
 		
 		float pixelRadius = CurrentRadius * PixelsPerMeter;
 		infoLabel.Position = new Vector2(-20, -pixelRadius -30);
