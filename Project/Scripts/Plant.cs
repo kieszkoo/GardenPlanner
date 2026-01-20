@@ -75,7 +75,7 @@ public partial class Plant : Area2D
 		TypeData = data;
 		AgeMonths = 0;
 		CurrentHeight = 0.1f;
-		CurrentRadius = data.CanopyRadius * 0.1f;
+		CurrentRadius = data.CanopyRadius * 0.01f;
 
 		if (ResourceLoader.Exists(data.TexturePath))
 		{

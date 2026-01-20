@@ -1,0 +1,41 @@
+{
+  "CurrentSimulationMonth": 48,
+  "SoilTypeID": 3,
+  "GardenWidth": 15,
+  "GardenHeight": 5,
+  "Plants": [
+    {
+      "TypeID": 1,
+      "PositionX": 356,
+      "PositionY": 150,
+      "AgeMonths": 36,
+      "CurrentHeight": 1.6373805,
+      "CurrentRadius": 0.54579353
+    },
+    {
+      "TypeID": 27,
+      "PositionX": 356.2857,
+      "PositionY": 175.42857,
+      "AgeMonths": 36,
+      "CurrentHeight": 1.5412942,
+      "CurrentRadius": 0.38532355
+    },
+    {
+      "TypeID": 2,
+      "PositionX": 595.5714,
+      "PositionY": 146.85715,
+      "AgeMonths": 36,
+      "CurrentHeight": 1.9953994,
+      "CurrentRadius": 0.3990799
+    },
+    {
+      "TypeID": 2,
+      "PositionX": 597.7143,
+      "PositionY": 203.28572,
+      "AgeMonths": 36,
+      "CurrentHeight": 1.9953994,
+      "CurrentRadius": 0.3990799
+    }
+  ],
+  "Holes": []
+}

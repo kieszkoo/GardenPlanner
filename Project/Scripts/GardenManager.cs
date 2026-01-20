@@ -777,6 +777,9 @@ public partial class GardenManager : Node2D
 		}
 
 		_camera.Position = new Vector2(600, 300);
+		
+		currentSeason = Season.Spring;
+		UpdateSeasonVisuals();
 		QueueRedraw();
 		
 		GD.Print("Ogród zresetowany.");
@@ -830,7 +833,7 @@ public partial class GardenManager : Node2D
 	{
 		if (dateLabel == null) return;
 
-		int year = (totalMonths -1) / 12 + 1;
+		int year = (totalMonths -1) / 12;
 		int monthInYear = ((totalMonths -1) % 12) + 1;
 
 		dateLabel.Text = $"Rok: {year}, Miesiąc: {monthInYear}";
