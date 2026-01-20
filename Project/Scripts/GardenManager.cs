@@ -35,6 +35,17 @@ public partial class GardenManager : Node2D
 	// Logika symulacja
 	private PackedScene plantScene;
 	private List<Plant> plantedPlants = new List<Plant>();
+	
+	// Klasa pomocnicza dla instancji dziury w pamięci
+	private class BoarHoleInstance
+	{
+		public Vector2 Position;
+		public float Radius;
+		public int MonthsLeft;
+	}
+
+	// Lista dziur
+	private List<BoarHoleInstance> boarHoles = new List<BoarHoleInstance>();
 
 	private List<PlantTypeData> availablePlantTypes = new List<PlantTypeData>();
 	private List<SoilData> availableSoilTypes = new List<SoilData>();
@@ -283,8 +294,27 @@ public partial class GardenManager : Node2D
 		Vector2 sizeInPixels = _gardenSize * PixelsPerMeter;
 		Rect2 gardenRect = new Rect2(new Vector2(300,100), sizeInPixels);
 		
+		// Tło ogrodu
 		DrawRect(gardenRect, new Color(0.5f, 0.4f, 0.2f, 0.2f), true);
 		DrawRect(gardenRect, Colors.White, false, 2.0f);
+
+		// Rysowanie dziur po dzikach
+		foreach (var hole in boarHoles)
+		{
+			Vector2 holePos = hole.Position;
+			float radiusMeters = hole.Radius;
+			float radiusPixels = radiusMeters * PixelsPerMeter;
+			
+			// Oblicz przezroczystość na podstawie czasu życia (MonthsLeft)
+			float opacity = Mathf.Clamp((float)hole.MonthsLeft / 3.0f, 0.0f, 1.0f);
+			
+			// Ciemnobrązowy kolor ziemi z uwzględnieniem zanikania
+			Color dirtColor = new Color(0.25f, 0.15f, 0.1f, 0.7f * opacity);
+			DrawCircle(holePos, radiusPixels, dirtColor);
+			
+			// obrys dziury
+			DrawArc(holePos, radiusPixels, 0, Mathf.Pi * 2, 32, new Color(0.15f, 0.1f, 0.05f, 1.0f * opacity), 2.0f);
+		}
 	}
 
 	
@@ -725,6 +755,9 @@ public partial class GardenManager : Node2D
 		}
 		plantedPlants.Clear();
 		
+		// Czyszczenie dziur
+		boarHoles.Clear();
+		
 		currentSimulationMonth = 0;
 		UpdateDateLabel(currentSimulationMonth);
 		
@@ -807,15 +840,34 @@ public partial class GardenManager : Node2D
 	{
 		UpdateSeason(month);
 		
+		// Event losowy
+		TriggerBoarEvent();
+
+		// Aktualizacja dziur po dzikach (zanikanie)
+		for (int i = boarHoles.Count - 1; i >= 0; i--)
+		{
+			boarHoles[i].MonthsLeft--;
+			if (boarHoles[i].MonthsLeft <= 0)
+			{
+				boarHoles.RemoveAt(i);
+			}
+		}
+		QueueRedraw(); // Odśwież widok, żeby pokazać zanikanie
+		
 		int year = (month -1) / 12 + 1;
 		int monthInYear = ((month -1) % 12) + 1;
 		
 		GD.Print($"--- Symulacja Rok {year}, Miesiąc {monthInYear} ---");
 
 		float seasonFactor = GetSeasonGrowthModifier();
-
-		foreach (var plantA in plantedPlants)
+		
+		for (int i = plantedPlants.Count - 1; i >= 0; i--)
 		{
+			var plantA = plantedPlants[i];
+			
+			// Jeśli roślina została oznaczona do usunięcia (np. przez dzika w tej klatce), pomiń
+			if (!IsInstanceValid(plantA) || plantA.IsQueuedForDeletion()) continue;
+
 			if (seasonFactor <= 0.01f)
 			{
 				continue;
@@ -824,6 +876,68 @@ public partial class GardenManager : Node2D
 			float sunLevel = CalculateSunLevel(plantA);
 			float growthFactorSoil = GetGrowthFactor(plantA);
 			plantA.SimulateMonth(growthFactorSoil, sunLevel);
+		}
+	}
+	
+	private void TriggerBoarEvent()
+	{
+		// 1% szansy na pojawienie się dzika w danym miesiącu
+		if (GD.Randf() > 0.01f) return;
+
+		// Zakres ogrodu
+		float minX = 300;
+		float minY = 100;
+		float maxX = 300 + (_gardenSize.X * PixelsPerMeter);
+		float maxY = 100 + (_gardenSize.Y * PixelsPerMeter);
+
+		// Losowa pozycja dziury
+		Vector2 holePos = new Vector2(
+			(float)GD.RandRange(minX, maxX),
+			(float)GD.RandRange(minY, maxY)
+		);
+
+		// Losowy promień (w metrach: 0.5m do 1.5m)
+		float holeRadiusMeters = (float)GD.RandRange(0.5f, 1.5f);
+
+		// Dodanie dziury do listy i wizualizacja.
+		boarHoles.Add(new BoarHoleInstance { 
+			Position = holePos, 
+			Radius = holeRadiusMeters,
+			MonthsLeft = 3 
+		});
+		
+		GD.Print($"[EVENT] Dzik zrył ziemię w punkcie {holePos} (promień: {holeRadiusMeters:F2}m)!");
+
+		List<Plant> plantsToKill = new List<Plant>();
+
+		foreach (var plant in plantedPlants)
+		{
+			// Sprawdzenie kolizji dziury z rośliną
+			float dist = plant.Position.DistanceTo(holePos);
+			float limit = holeRadiusMeters * PixelsPerMeter; // Promień w pikselach
+
+			// Jeśli roślina jest w zasięgu rycia
+			if (dist < limit)
+			{
+				// Sprawdzamy ID typu rośliny
+				// 3=Kwiaty, 4=Paprocie, 5=Zioła, 6=Trawy
+				// (Drzewa=1 i Krzewy=2 są bezpieczne)
+				int typeId = plant.TypeData.TypeId;
+				if (typeId == 3 || typeId == 4 || typeId == 5 || typeId == 6)
+				{
+					plantsToKill.Add(plant);
+				}
+			}
+		}
+
+		if (plantsToKill.Count > 0)
+		{
+			GD.Print($"[EVENT] Dzik zniszczył {plantsToKill.Count} roślin!");
+			foreach (var p in plantsToKill)
+			{
+				plantedPlants.Remove(p);
+				p.QueueFree();
+			}
 		}
 	}
 
@@ -873,6 +987,7 @@ public partial class GardenManager : Node2D
 		foreach (var plantA in plantedPlants)
 		{
 			if (plantA == plantB) continue;
+			if (!IsInstanceValid(plantA)) continue;
 
 			if (plantA.CurrentHeight > plantB.CurrentHeight)
 			{
@@ -952,9 +1067,11 @@ public partial class GardenManager : Node2D
 			SoilTypeID = currentSoilType.Id,
 			GardenWidth = gardenBg != null ? (int)(gardenBg.Size.X / PixelsPerMeter) : (int)_gardenSize.X,
 			GardenHeight = gardenBg != null ? (int)(gardenBg.Size.Y / PixelsPerMeter) : (int)_gardenSize.Y,
-			Plants = new List<PlantSaveData>()
+			Plants = new List<PlantSaveData>(),
+			Holes = new List<BoarHoleSaveData>()
 		};
 		
+		// Zapisz rośliny
 		foreach (var plant in plantedPlants)
 		{
 			saveData.Plants.Add(new PlantSaveData
@@ -965,6 +1082,18 @@ public partial class GardenManager : Node2D
 				AgeMonths = plant.AgeMonths,
 				CurrentHeight = plant.CurrentHeight,
 				CurrentRadius = plant.CurrentRadius
+			});
+		}
+
+		// Zapisz dziury po dzikach
+		foreach (var hole in boarHoles)
+		{
+			saveData.Holes.Add(new BoarHoleSaveData
+			{
+				PositionX = hole.Position.X,
+				PositionY = hole.Position.Y,
+				Radius = hole.Radius,
+				MonthsLeft = hole.MonthsLeft
 			});
 		}
 
@@ -980,7 +1109,7 @@ public partial class GardenManager : Node2D
 			}
 
 			file.StoreString(jsonString);
-			GD.Print("Stan ogrodu zapisany pomyślnie");
+			GD.Print("Stan ogrodu zapisanym pomyślnie");
 		}
 		catch (System.Exception e)
 		{
@@ -1052,12 +1181,13 @@ public partial class GardenManager : Node2D
 				return;
 			}
 
+			// Czyszczenie stanu
 			foreach (var plant in plantedPlants)
 			{
 				plant.QueueFree();
 			}
-
 			plantedPlants.Clear();
+			boarHoles.Clear();
 
 			currentSimulationMonth = saveData.CurrentSimulationMonth;
 			UpdateDateLabel(currentSimulationMonth);
@@ -1084,6 +1214,7 @@ public partial class GardenManager : Node2D
 			QueueRedraw();	
 			if (plantListContainer != null) plantListContainer.Visible = true;
 			
+			// Wczytywanie roślin
 			foreach (var plantData in saveData.Plants)
 			{
 				var typeData = availablePlantTypes.FirstOrDefault(p => p.Id == plantData.TypeID);
@@ -1099,6 +1230,20 @@ public partial class GardenManager : Node2D
 				if (newPlant != null)
 				{
 					newPlant.LoadState(plantData.AgeMonths, plantData.CurrentHeight, plantData.CurrentRadius);
+				}
+			}
+
+			// Wczytywanie dziur po dzikach
+			if (saveData.Holes != null)
+			{
+				foreach (var holeData in saveData.Holes)
+				{
+					boarHoles.Add(new BoarHoleInstance {
+						Position = new Vector2(holeData.PositionX, holeData.PositionY), 
+						Radius = holeData.Radius,
+						// Jeśli wczytujemy stary zapis (bez MonthsLeft), domyślnie dajemy 3 miesiące
+						MonthsLeft = holeData.MonthsLeft > 0 ? holeData.MonthsLeft : 3
+					});
 				}
 			}
 		
@@ -1170,6 +1315,7 @@ public class GardenSaveData
 	public int GardenWidth { get; set; }
 	public int GardenHeight { get; set; }
 	public List<PlantSaveData> Plants { get; set; } = new List<PlantSaveData>();
+	public List<BoarHoleSaveData> Holes { get; set; } = new List<BoarHoleSaveData>();
 }
 public class PlantSaveData
 {
@@ -1179,4 +1325,11 @@ public class PlantSaveData
 	public int AgeMonths { get; set; }
 	public float CurrentHeight { get; set; }
 	public float CurrentRadius { get; set; }
+}
+public class BoarHoleSaveData
+{
+	public float PositionX { get; set; }
+	public float PositionY { get; set; }
+	public float Radius { get; set; }
+	public int MonthsLeft { get; set; }
 }
