@@ -1,16 +1,600 @@
 {
-  "CurrentSimulationMonth": 1,
+  "CurrentSimulationMonth": 20,
   "SoilTypeID": 1,
   "GardenWidth": 10,
   "GardenHeight": 10,
   "Plants": [
     {
-      "TypeID": 8,
+      "TypeID": 32,
+      "PositionX": 382,
+      "PositionY": 230,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 482,
+      "PositionY": 242,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 498,
+      "PositionY": 386,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 425,
+      "PositionY": 380,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 520,
+      "PositionY": 426,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 600,
+      "PositionY": 360,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 544,
+      "PositionY": 284,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 604,
+      "PositionY": 201,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 690,
+      "PositionY": 188,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.40429,
+      "CurrentRadius": 0.1010725
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 649,
+      "PositionY": 387,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 590,
+      "PositionY": 465,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 531,
+      "PositionY": 481,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 376,
+      "PositionY": 490,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 349,
+      "PositionY": 442,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 356,
+      "PositionY": 362,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 348,
+      "PositionY": 313,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 399,
+      "PositionY": 284,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 457,
+      "PositionY": 323,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 494,
+      "PositionY": 307,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 515,
+      "PositionY": 328,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 555,
+      "PositionY": 374,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 596,
+      "PositionY": 416,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 657,
+      "PositionY": 446,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 704,
+      "PositionY": 495,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 753,
+      "PositionY": 555,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 785,
+      "PositionY": 569,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 649,
+      "PositionY": 554,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 524,
+      "PositionY": 556,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 351,
+      "PositionY": 563,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 436,
+      "PositionY": 569,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 441,
+      "PositionY": 514,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 448,
+      "PositionY": 461,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 336,
+      "PositionY": 122,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 399,
+      "PositionY": 127,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 459,
+      "PositionY": 127,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
       "PositionX": 516,
-      "PositionY": 337,
-      "AgeMonths": 1,
-      "CurrentHeight": 0.1252,
-      "CurrentRadius": 0.041733332
+      "PositionY": 126,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 561,
+      "PositionY": 124,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 610,
+      "PositionY": 130,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 665,
+      "PositionY": 132,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 720,
+      "PositionY": 127,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 758,
+      "PositionY": 125,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 767,
+      "PositionY": 184,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 689,
+      "PositionY": 182,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.40429,
+      "CurrentRadius": 0.1010725
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 624,
+      "PositionY": 180,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 560,
+      "PositionY": 180,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 519,
+      "PositionY": 184,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 450,
+      "PositionY": 179,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 402,
+      "PositionY": 176,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 358,
+      "PositionY": 178,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 349,
+      "PositionY": 240,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 466,
+      "PositionY": 247,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 431,
+      "PositionY": 235,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 543,
+      "PositionY": 241,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 582,
+      "PositionY": 242,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 605,
+      "PositionY": 242,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 747,
+      "PositionY": 238,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 772,
+      "PositionY": 236,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 750,
+      "PositionY": 316,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 593,
+      "PositionY": 307,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.42082745,
+      "CurrentRadius": 0.10520686
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 585,
+      "PositionY": 311,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.42082745,
+      "CurrentRadius": 0.10520686
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 378,
+      "PositionY": 380,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 366,
+      "PositionY": 439,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 746,
+      "PositionY": 371,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 693,
+      "PositionY": 367,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 729,
+      "PositionY": 413,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 770,
+      "PositionY": 435,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 759,
+      "PositionY": 500,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 725,
+      "PositionY": 462,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 625,
+      "PositionY": 503,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 577,
+      "PositionY": 550,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 565,
+      "PositionY": 513,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 495,
+      "PositionY": 528,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    },
+    {
+      "TypeID": 32,
+      "PositionX": 332,
+      "PositionY": 507,
+      "AgeMonths": 15,
+      "CurrentHeight": 0.43074992,
+      "CurrentRadius": 0.10768748
+    }
+  ],
+  "Holes": [
+    {
+      "PositionX": 688.853,
+      "PositionY": 264.92175,
+      "Radius": 1.1009557,
+      "MonthsLeft": 2
     }
   ]
 }
